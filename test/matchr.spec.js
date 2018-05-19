@@ -6,7 +6,7 @@ const UNMATCHABLE = '__UNMATCHABLE__';
 let signatures;
 
 beforeEach(() => {
-    signatures = {pa
+    signatures = {
         0: '"foo"',
         1: 1,
         2: true,
