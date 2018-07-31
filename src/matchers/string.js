@@ -1,17 +1,17 @@
 'use strict';
 
-module.exports = (p1, p2) => {
-    let p2parsed;
+module.exports = (input, signature) => {
+    let parsedValue;
 
     try {
-        p2parsed = JSON.parse(p2);
+        parsedValue = JSON.parse(signature);
 
-        if (typeof p2parsed !== 'string') {
+        if (typeof parsedValue !== 'string') {
             throw 'not a string';
         }
     } catch (err) {
 
     }
 
-    return p1 === p2parsed;
+    return input === parsedValue;
 };

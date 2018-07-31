@@ -1,39 +1,29 @@
 'ust strict';
 
-const { isMatch } = require('../util')
+const { isMatchingSignature } = require('../util')
 
-module.exports = (p1, p2) => {
-    if (p2[0] !== '[') {
-        return false;
-    }
+module.exports = (input, signature) => {
+    if (signature[0] !== '[') return false;
+    if (signature === '[]') return true;
+    if (input.length === 0) return false;
 
-    if (p2 === '[]') {
-        return true;
-    }
-
-    if (p1.length === 0) {
-        return false;
-    }
-
-    let p2parsed = parseSignature(p2)
-    let usePartialMatch = p2parsed.includes('...')
+    let parsedValue = parseSignature(signature)
+    let usePartialMatch = parsedValue.includes('...')
 
     if (usePartialMatch) {
-        return p2parsed
+        return parsedValue
             .filter(x => x !== '...')
-            .every((v, i) => isMatch(p1[i], v))
+            .every((v, i) => isMatchingSignature(input[i], v))
 
-    } else if (p1.length === p2parsed.length) {
-        return p2parsed.every((v, i) => isMatch(p1[i], v))
+    } else if (input.length === parsedValue.length) {
+        return parsedValue.every((v, i) => isMatchingSignature(input[i], v))
     } else {
         return false;
     }
 };
 
-function parseSignature(sig) {
-    let parsed = sig.trim();
-
-    return parsed.slice(1, parsed.length - 1)
+function parseSignature(signature) {
+    return signature.slice(1, signature.length - 1)
         .split(',')
-        .map(x => x.trim())
+        .map(a => a.trim())
 }

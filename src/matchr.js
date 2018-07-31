@@ -1,36 +1,44 @@
 'use strict';
 
-const typeMatcher = require('./matchers/type')
-const { getMatcher, getType, log } = require('./util')
+const typeMatcher = require('./matchers/type');
+const { identifyType, getMatcher, getType, log } = require('./util');
 
 const matchr = (input, cases) => {
-    let matcher = getMatcher(input)
-    let matchedSignature = Object.keys(cases)
-        .find(signature => matcher(input, signature) || typeMatcher(input, signature));
-    let matchedValue = cases[matchedSignature];
-    let output;
+    if (typeof cases !== 'object') {
+        throw new Error('must provide cases');
+    }
 
-    if (matchedValue) {
-        log('[matchr] matched', input, matchedSignature, matchedValue)
-        output = matchedValue;
+    const inputType = identifyType(input);
+    const matcher = getMatcher(inputType);
+    const signatures = Object.keys(cases);
+    const matchingSignature = signatures.find(s => matcher(input, s));
+    const result = cases[matchingSignature];
+
+    if (typeof result !== 'undefined') {
+        log('[matchr] matched', input, matchingSignature, result);
+
+        if (typeof result === 'function') {
+            return inputType === 'arguments'
+                ? result.apply(result, input)
+                : result();
+        } else {
+            return result;
+        }
+    } else if (typeof cases._ !== 'undefined') {
+        log('[matchr] nothing matched, using fallback');
+        return cases._;
     } else {
-        log('[matchr] nothing matched, trying fallback')
-        output = cases['*']
-    }   
-
-    return send(input, output)
+        throw new Error('[matchr] no matches found for input: ' + input);
+    }
 };
 
-function send(input, value) {
-    if (typeof value === 'function') {
-        return getType(input) === 'arguments'
-            ? value.apply(value, input)
-            : value();
-    } else if (value) {
-        return value;
-    } else {
-        throw new Error('[matchr] no matches found for input: ' + input)
-    }
-}
+matchr.fn = (cases) => (input) => matchr(input, cases);
+
+matchr.args = (args, cases) => {
+    return matchr(input, {
+        ...cases,
+        _: throw new Error('invalid arguments!')
+    });
+};
 
 module.exports = matchr;

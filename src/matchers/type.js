@@ -1,12 +1,12 @@
 'ust strict';
 
-module.exports = (p1, p2) => {
-    if (p2[0] !== '<') {
-        return;
-    }
+const { type } = require('../patterns');
 
-    const groups = p2.match(/^<(\w+)>$/);
-    const constructor = groups && groups[1];
+module.exports = (input, signature) => {
+    if (signature[0] !== type.start) return false;
 
-    return constructor && p1.constructor === ((global || window)[constructor]);
+    const regexMatch = signature.match(type.regex);
+    const constructor = regexMatch && regexMatch[1];
+
+    return constructor && input.constructor === ((global || window)[constructor]);
 };
